@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rosterly — HR Operations Dashboard</title>
+<link rel="icon" href="data:,">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+* { box-sizing: border-box; }
+body { margin: 0; }
+.rst-root { font-family: 'Inter', sans-serif; background: #F5F6F8; min-height: 100vh; color: #14171F; display: flex; }
+.rst-sidebar { width: 220px; background: #14171F; color: #F5F6F8; padding: 22px 14px; flex-shrink: 0; }
+.rst-brand { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; padding: 0 8px 22px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 16px; display: flex; align-items: baseline; gap: 6px; }
+.rst-brand-mark { display: inline-block; width: 8px; height: 8px; background: #C98A2C; border-radius: 1px; }
+.rst-navitem { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: none; border: none; color: #B8BCC7; padding: 10px 10px; border-radius: 6px; cursor: pointer; font-size: 13.5px; font-family: 'Inter'; margin-bottom: 2px; transition: background .15s, color .15s; }
+.rst-navitem:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.rst-navitem-active { background: #2F5D62; color: #fff; }
+.rst-main { flex: 1; padding: 30px 36px; max-width: 1100px; }
+.rst-page-title { font-family: 'Fraunces', serif; font-size: 26px; margin: 0 0 4px; }
+.rst-page-sub { color: #6B7080; font-size: 13px; margin-bottom: 22px; }
+.rst-grid-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.rst-card { background: #fff; border: 1px solid #E4E1D8; border-radius: 10px; }
+.rst-stat { padding: 16px 18px; }
+.rst-stat-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #8A8F9C; font-family: 'IBM Plex Mono'; }
+.rst-stat-value { font-family: 'Fraunces', serif; font-size: 30px; margin-top: 4px; }
+.rst-stat-sub { font-size: 12px; color: #6B7080; margin-top: 2px; }
+.rst-section-title { font-family: 'Fraunces', serif; font-size: 18px; margin-bottom: 14px; }
+.rst-row-between { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.rst-btn-primary { display: inline-flex; align-items: center; gap: 6px; background: #2F5D62; color: #fff; border: none; padding: 9px 14px; border-radius: 7px; font-size: 13px; cursor: pointer; font-family: 'Inter'; font-weight: 500; }
+.rst-btn-primary:disabled { opacity: 0.5; cursor: default; }
+.rst-btn-ghost { background: none; border: 1px solid #DDE1E6; padding: 9px 14px; border-radius: 7px; font-size: 13px; cursor: pointer; color: #4A4F5C; }
+.rst-btn-ghost:disabled { opacity: 0.4; cursor: default; }
+.rst-kanban { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.rst-kancol { background: #EEF0F2; border-radius: 10px; padding: 10px; min-height: 200px; }
+.rst-kancol-head { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: #4A4F5C; padding: 4px 4px 10px; }
+.rst-tag { background: #DDE1E6; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-family: 'IBM Plex Mono'; }
+.rst-candcard { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid #E4E1D8; border-radius: 8px; padding: 10px 11px; margin-bottom: 8px; cursor: pointer; border-left: 3px solid #2F5D62; }
+.rst-candname { font-size: 13px; font-weight: 600; }
+.rst-candrole { font-size: 11.5px; color: #6B7080; margin-top: 1px; }
+.rst-stars { display: flex; gap: 2px; margin-top: 6px; }
+.rst-drawer-backdrop { position: fixed; inset: 0; background: rgba(20,23,31,0.35); display: flex; justify-content: flex-end; z-index: 50; }
+.rst-drawer { width: 340px; background: #fff; height: 100%; padding: 26px 24px; position: relative; overflow-y: auto; }
+.rst-drawer-close { position: absolute; top: 18px; right: 18px; background: none; border: none; cursor: pointer; color: #6B7080; font-size: 16px; }
+.rst-drawer-title { font-family: 'Fraunces', serif; font-size: 20px; margin-top: 10px; }
+.rst-drawer-sub { color: #6B7080; font-size: 13px; margin-bottom: 16px; }
+.rst-drawer-row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 0; color: #33363F; }
+.rst-drawer-notes { font-size: 13px; color: #4A4F5C; background: #F5F6F8; padding: 10px 12px; border-radius: 8px; margin-top: 10px; }
+.rst-input { width: 100%; border: 1px solid #DDE1E6; border-radius: 7px; padding: 9px 11px; font-size: 13px; margin-bottom: 9px; font-family: 'Inter'; }
+.rst-toolbar { display: flex; gap: 10px; margin-bottom: 14px; }
+.rst-search { display: flex; align-items: center; gap: 7px; border: 1px solid #DDE1E6; background: #fff; border-radius: 7px; padding: 8px 11px; flex: 1; color: #8A8F9C; }
+.rst-search input { border: none; outline: none; font-size: 13px; width: 100%; color: #14171F; background: transparent; }
+.rst-select { border: 1px solid #DDE1E6; border-radius: 7px; padding: 8px 11px; font-size: 13px; background: #fff; }
+.rst-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rst-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #8A8F9C; font-family: 'IBM Plex Mono'; padding: 12px 16px; border-bottom: 1px solid #E4E1D8; }
+.rst-table td { padding: 11px 16px; border-bottom: 1px solid #EFEDE6; }
+.rst-table tbody tr { cursor: pointer; }
+.rst-table tbody tr:hover { background: #F9F9F7; }
+.rst-status { padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 500; }
+.rst-status-ok { background: #E4EFE8; color: #3F7D5C; }
+.rst-status-warn { background: #F7ECD9; color: #A5701C; }
+.rst-status-bad { background: #F5E2DE; color: #B3452F; }
+.rst-inline-actions { display: flex; gap: 6px; }
+.rst-icon-btn { border: 1px solid #DDE1E6; background: #fff; border-radius: 6px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #3F7D5C; }
+.rst-icon-btn-bad { color: #B3452F; }
+.rst-ai-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.rst-ai-card { padding: 16px; }
+.rst-ai-title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.rst-ai-output { font-size: 12.5px; color: #33363F; background: #F5F6F8; border-radius: 8px; padding: 12px; margin-top: 10px; white-space: pre-wrap; line-height: 1.5; max-height: 260px; overflow-y: auto; }
+.rst-ai-note { font-size: 11.5px; color: #A5701C; background: #F7ECD9; border-radius: 8px; padding: 8px 10px; margin-top: 8px; line-height: 1.4; }
+.rst-spin { animation: rst-spin 0.8s linear infinite; display: inline-block; }
+@keyframes rst-spin { to { transform: rotate(360deg); } }
+.rst-chart { display: flex; align-items: flex-end; gap: 18px; height: 200px; padding: 10px 6px 0; border-bottom: 1px solid #E4E1D8; }
+.rst-chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.rst-chart-bar { width: 40px; background: #2F5D62; border-radius: 4px 4px 0 0; transition: height .3s; }
+.rst-chart-label { font-size: 11px; color: #6B7080; margin-top: 8px; font-family: 'IBM Plex Mono'; }
+.rst-chart-count { font-size: 11px; color: #14171F; margin-bottom: 4px; font-family: 'IBM Plex Mono'; }
+@media (max-width: 900px) {
+  .rst-root { flex-direction: column; }
+  .rst-sidebar { width: 100%; display: flex; overflow-x: auto; }
+  .rst-grid-stats, .rst-kanban, .rst-ai-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+const STAGES = ["Applied", "Screening", "Interview", "Offer", "Hired"];
+
+const seedCandidates = [
+  { id: "c1", name: "Farhana Akter", role: "Content Associate", stage: "Interview", rating: 4, email: "farhana@example.com", phone: "01700000001", notes: "Strong writing sample, weak on data tools." },
+  { id: "c2", name: "Tanvir Ahmed", role: "HR Intern", stage: "Screening", rating: 3, email: "tanvir@example.com", phone: "01700000002", notes: "Final year, BBA HR major, available immediately." },
+  { id: "c3", name: "Nusrat Jahan", role: "Video Editor", stage: "Applied", rating: 0, email: "nusrat@example.com", phone: "01700000003", notes: "Portfolio pending review." },
+  { id: "c4", name: "Rakib Hasan", role: "HR Intern", stage: "Offer", rating: 5, email: "rakib@example.com", phone: "01700000004", notes: "Panel unanimous. Awaiting offer acceptance." },
+  { id: "c5", name: "Mim Sultana", role: "Curriculum Writer", stage: "Applied", rating: 0, email: "mim@example.com", phone: "01700000005", notes: "" },
+  { id: "c6", name: "Sabbir Khan", role: "Content Associate", stage: "Hired", rating: 5, email: "sabbir@example.com", phone: "01700000006", notes: "Joins 1st of next month." },
+];
+
+const seedEmployees = [
+  { id: "e1", name: "Sabbir Khan", dept: "Content", title: "Content Associate", status: "Active", joined: "2026-03-01", leaveBalance: 14 },
+  { id: "e2", name: "Ishrat Zaman", dept: "Product", title: "Product Coordinator", status: "Active", joined: "2025-11-14", leaveBalance: 9 },
+  { id: "e3", name: "Kamrul Islam", dept: "Engineering", title: "Backend Developer", status: "Active", joined: "2024-06-10", leaveBalance: 6 },
+  { id: "e4", name: "Proma Das", dept: "HR", title: "HR Executive", status: "On Leave", joined: "2023-09-01", leaveBalance: 2 },
+  { id: "e5", name: "Shakil Rahman", dept: "Marketing", title: "Growth Associate", status: "Active", joined: "2026-01-20", leaveBalance: 12 },
+];
+
+const seedLeaves = [
+  { id: "l1", employee: "Proma Das", type: "Sick", from: "2026-08-02", to: "2026-08-05", status: "Pending" },
+  { id: "l2", employee: "Kamrul Islam", type: "Casual", from: "2026-08-10", to: "2026-08-11", status: "Pending" },
+  { id: "l3", employee: "Shakil Rahman", type: "Casual", from: "2026-07-20", to: "2026-07-21", status: "Approved" },
+];
+
+// Simple hand-rolled icons (no icon library dependency, so this file has zero build step)
+const Icon = ({ path, size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{path}</svg>
+);
+const IconDashboard = (p) => <Icon {...p} path={<><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></>} />;
+const IconUsers = (p) => <Icon {...p} path={<><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17.2" cy="9" r="2.6"/><path d="M15.5 14c2.8.3 5 2.5 5 6"/></>} />;
+const IconKanban = (p) => <Icon {...p} path={<><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/></>} />;
+const IconCalendar = (p) => <Icon {...p} path={<><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></>} />;
+const IconSparkles = (p) => <Icon {...p} path={<><path d="M12 3l1.7 4.6L18 9.3l-4.3 1.7L12 15.5l-1.7-4.5L6 9.3l4.3-1.7L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></>} />;
+const IconStar = ({ filled }) => <svg width="11" height="11" viewBox="0 0 24 24" fill={filled ? "#C98A2C" : "none"} stroke="#C98A2C" strokeWidth="1.6"><path d="M12 2l3 6.5 7 .9-5.1 4.8 1.3 6.9L12 17.9 5.8 21.1l1.3-6.9L2 9.4l7-.9L12 2z"/></svg>;
+
+function StatCard({ label, value, sub }) {
+  return (
+    <div className="rst-card rst-stat">
+      <div className="rst-stat-label">{label}</div>
+      <div className="rst-stat-value">{value}</div>
+      {sub && <div className="rst-stat-sub">{sub}</div>}
+    </div>
+  );
+}
+
+function Tab({ id, Icon: I, label, active, onClick }) {
+  return (
+    <button className={`rst-navitem ${active ? "rst-navitem-active" : ""}`} onClick={() => onClick(id)}>
+      <I size={17} /><span>{label}</span>
+    </button>
+  );
+}
+
+function Dashboard({ candidates, employees, leaves }) {
+  const activeEmployees = employees.filter((e) => e.status === "Active").length;
+  const pendingLeaves = leaves.filter((l) => l.status === "Pending").length;
+  const inPipeline = candidates.filter((c) => c.stage !== "Hired").length;
+  const funnel = STAGES.map((s) => ({ stage: s, count: candidates.filter((c) => c.stage === s).length }));
+  const max = Math.max(1, ...funnel.map((f) => f.count));
+
+  return (
+    <div>
+      <div className="rst-grid-stats">
+        <StatCard label="Employees" value={employees.length} sub={`${activeEmployees} active`} />
+        <StatCard label="In pipeline" value={inPipeline} sub="applied → offer" />
+        <StatCard label="Pending leave" value={pendingLeaves} sub="awaiting review" />
+        <StatCard label="Hired this cycle" value={candidates.filter((c) => c.stage === "Hired").length} />
+      </div>
+      <div className="rst-card" style={{ marginTop: 20, padding: "20px 24px" }}>
+        <div className="rst-section-title">Hiring funnel</div>
+        <div className="rst-chart">
+          {funnel.map((f) => (
+            <div className="rst-chart-col" key={f.stage}>
+              <div className="rst-chart-count">{f.count}</div>
+              <div className="rst-chart-bar" style={{ height: `${(f.count / max) * 140 || 4}px` }} />
+              <div className="rst-chart-label">{f.stage}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Recruitment({ candidates, setCandidates }) {
+  const [selected, setSelected] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ name: "", role: "", email: "", phone: "" });
+
+  const moveStage = (id, dir) => {
+    setCandidates((prev) => prev.map((c) => {
+      if (c.id !== id) return c;
+      const idx = STAGES.indexOf(c.stage);
+      const next = Math.min(Math.max(idx + dir, 0), STAGES.length - 1);
+      return { ...c, stage: STAGES[next] };
+    }));
+    setSelected((s) => s ? { ...s, stage: STAGES[Math.min(Math.max(STAGES.indexOf(s.stage) + dir, 0), STAGES.length - 1)] } : s);
+  };
+
+  const addCandidate = () => {
+    if (!form.name.trim() || !form.role.trim()) return;
+    setCandidates((prev) => [{ id: "c" + Date.now(), stage: "Applied", rating: 0, notes: "", ...form }, ...prev]);
+    setForm({ name: "", role: "", email: "", phone: "" });
+    setShowAdd(false);
+  };
+
+  return (
+    <div>
+      <div className="rst-row-between">
+        <div className="rst-section-title">Recruitment pipeline</div>
+        <button className="rst-btn-primary" onClick={() => setShowAdd(true)}>+ Add candidate</button>
+      </div>
+      <div className="rst-kanban">
+        {STAGES.map((stage) => (
+          <div className="rst-kancol" key={stage}>
+            <div className="rst-kancol-head"><span>{stage}</span><span className="rst-tag">{candidates.filter((c) => c.stage === stage).length}</span></div>
+            <div>
+              {candidates.filter((c) => c.stage === stage).map((c) => (
+                <button key={c.id} className="rst-candcard" onClick={() => setSelected(c)}>
+                  <div className="rst-candname">{c.name}</div>
+                  <div className="rst-candrole">{c.role}</div>
+                  {c.rating > 0 && <div className="rst-stars">{Array.from({ length: 5 }).map((_, i) => <IconStar key={i} filled={i < c.rating} />)}</div>}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {selected && (
+        <div className="rst-drawer-backdrop" onClick={() => setSelected(null)}>
+          <div className="rst-drawer" onClick={(e) => e.stopPropagation()}>
+            <button className="rst-drawer-close" onClick={() => setSelected(null)}>✕</button>
+            <div className="rst-drawer-title">{selected.name}</div>
+            <div className="rst-drawer-sub">{selected.role} — {selected.stage}</div>
+            <div className="rst-drawer-row">✉ {selected.email || "—"}</div>
+            <div className="rst-drawer-row">☎ {selected.phone || "—"}</div>
+            <div className="rst-drawer-notes">{selected.notes || "No notes yet."}</div>
+            <div className="rst-row-between" style={{ marginTop: 18 }}>
+              <button className="rst-btn-ghost" disabled={selected.stage === STAGES[0]} onClick={() => moveStage(selected.id, -1)}>← Back a stage</button>
+              <button className="rst-btn-primary" disabled={selected.stage === STAGES[STAGES.length - 1]} onClick={() => moveStage(selected.id, 1)}>Advance →</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAdd && (
+        <div className="rst-drawer-backdrop" onClick={() => setShowAdd(false)}>
+          <div className="rst-drawer" onClick={(e) => e.stopPropagation()}>
+            <button className="rst-drawer-close" onClick={() => setShowAdd(false)}>✕</button>
+            <div className="rst-drawer-title">New candidate</div>
+            <input className="rst-input" placeholder="Full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input className="rst-input" placeholder="Role applied for" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
+            <input className="rst-input" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <input className="rst-input" placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <button className="rst-btn-primary" style={{ marginTop: 12, width: "100%", justifyContent: "center" }} onClick={addCandidate}>Add to Applied</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Employees({ employees }) {
+  const [query, setQuery] = useState("");
+  const [dept, setDept] = useState("All");
+  const [selected, setSelected] = useState(null);
+  const depts = ["All", ...Array.from(new Set(employees.map((e) => e.dept)))];
+  const filtered = employees.filter((e) => (dept === "All" || e.dept === dept) && e.name.toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <div>
+      <div className="rst-section-title">Employee directory</div>
+      <div className="rst-toolbar">
+        <div className="rst-search"><span>🔍</span><input placeholder="Search employees…" value={query} onChange={(e) => setQuery(e.target.value)} /></div>
+        <select className="rst-select" value={dept} onChange={(e) => setDept(e.target.value)}>{depts.map((d) => <option key={d}>{d}</option>)}</select>
+      </div>
+      <div className="rst-card" style={{ padding: 0, overflow: "hidden" }}>
+        <table className="rst-table">
+          <thead><tr><th>Name</th><th>Department</th><th>Title</th><th>Status</th><th>Joined</th></tr></thead>
+          <tbody>
+            {filtered.map((e) => (
+              <tr key={e.id} onClick={() => setSelected(e)}>
+                <td>{e.name}</td><td>{e.dept}</td><td>{e.title}</td>
+                <td><span className={`rst-status rst-status-${e.status === "Active" ? "ok" : "warn"}`}>{e.status}</span></td>
+                <td>{e.joined}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {selected && (
+        <div className="rst-drawer-backdrop" onClick={() => setSelected(null)}>
+          <div className="rst-drawer" onClick={(e) => e.stopPropagation()}>
+            <button className="rst-drawer-close" onClick={() => setSelected(null)}>✕</button>
+            <div className="rst-drawer-title">{selected.name}</div>
+            <div className="rst-drawer-sub">{selected.title} — {selected.dept}</div>
+            <div className="rst-drawer-row">Status: {selected.status}</div>
+            <div className="rst-drawer-row">Joined: {selected.joined}</div>
+            <div className="rst-drawer-row">Leave balance: {selected.leaveBalance} days</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Leave({ leaves, setLeaves }) {
+  const setStatus = (id, status) => setLeaves((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+  return (
+    <div>
+      <div className="rst-section-title">Leave requests</div>
+      <div className="rst-card" style={{ padding: 0, overflow: "hidden" }}>
+        <table className="rst-table">
+          <thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {leaves.map((l) => (
+              <tr key={l.id}>
+                <td>{l.employee}</td><td>{l.type}</td><td>{l.from}</td><td>{l.to}</td>
+                <td><span className={`rst-status rst-status-${l.status === "Approved" ? "ok" : l.status === "Rejected" ? "bad" : "warn"}`}>{l.status}</span></td>
+                <td>
+                  {l.status === "Pending" && (
+                    <div className="rst-inline-actions">
+                      <button className="rst-icon-btn" onClick={() => setStatus(l.id, "Approved")}>✓</button>
+                      <button className="rst-icon-btn rst-icon-btn-bad" onClick={() => setStatus(l.id, "Rejected")}>✕</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AITools({ candidates }) {
+  const note = "This panel calls Claude to generate real text. It works inside the Claude preview, which injects the API access. On a plain static host like GitHub Pages there's no API key here (correctly — a key can't be safely embedded in public front-end code), so these buttons need a small backend/serverless proxy holding the key before they'll work live. Wiring is left in place below for that.";
+
+  const [jdRole, setJdRole] = useState("");
+  const [qRole, setQRole] = useState("");
+  const [sumCandidate, setSumCandidate] = useState("");
+  const [out, setOut] = useState({ jd: "", q: "", sum: "" });
+  const [loading, setLoading] = useState({ jd: false, q: false, sum: false });
+
+  const ask = async (prompt, key) => {
+    setLoading((s) => ({ ...s, [key]: true }));
+    setOut((s) => ({ ...s, [key]: "" }));
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content: prompt }] }),
+      });
+      const data = await res.json();
+      const text = (data.content || []).map((b) => b.type === "text" ? b.text : "").filter(Boolean).join("\n");
+      setOut((s) => ({ ...s, [key]: text || "No response." }));
+    } catch (e) {
+      setOut((s) => ({ ...s, [key]: "Couldn't reach the AI service from this host — see the note above." }));
+    }
+    setLoading((s) => ({ ...s, [key]: false }));
+  };
+
+  return (
+    <div>
+      <div className="rst-section-title">✨ AI tools</div>
+      <div className="rst-ai-note" style={{ marginBottom: 14 }}>{note}</div>
+      <div className="rst-ai-grid">
+        <div className="rst-card rst-ai-card">
+          <div className="rst-ai-title">Job description generator</div>
+          <input className="rst-input" placeholder="e.g. Content Associate" value={jdRole} onChange={(e) => setJdRole(e.target.value)} />
+          <button className="rst-btn-primary" disabled={loading.jd} onClick={() => ask(`Write a concise job description for a "${jdRole}" role at a fast-growing EdTech startup in Bangladesh. Role summary, 4-6 responsibilities, 4-6 qualifications. Under 220 words, plain text.`, "jd")}>{loading.jd ? "…" : "Generate"}</button>
+          {out.jd && <div className="rst-ai-output">{out.jd}</div>}
+        </div>
+        <div className="rst-card rst-ai-card">
+          <div className="rst-ai-title">Interview question generator</div>
+          <input className="rst-input" placeholder="e.g. HR Intern" value={qRole} onChange={(e) => setQRole(e.target.value)} />
+          <button className="rst-btn-primary" disabled={loading.q} onClick={() => ask(`Give 6 interview questions for a "${qRole}" candidate — mix of behavioral and role-specific. Numbered list, one line each.`, "q")}>{loading.q ? "…" : "Generate"}</button>
+          {out.q && <div className="rst-ai-output">{out.q}</div>}
+        </div>
+        <div className="rst-card rst-ai-card">
+          <div className="rst-ai-title">Candidate summary</div>
+          <select className="rst-select" style={{ width: "100%", marginBottom: 9 }} value={sumCandidate} onChange={(e) => setSumCandidate(e.target.value)}>
+            <option value="">Choose a candidate…</option>
+            {candidates.map((c) => <option key={c.id} value={c.id}>{c.name} — {c.role}</option>)}
+          </select>
+          <button className="rst-btn-primary" disabled={loading.sum || !sumCandidate} onClick={() => {
+            const c = candidates.find((x) => x.id === sumCandidate);
+            if (!c) return;
+            ask(`Write a 3-sentence recruiter-facing summary. Name: ${c.name}. Role: ${c.role}. Stage: ${c.stage}. Notes: ${c.notes || "none"}.`, "sum");
+          }}>{loading.sum ? "…" : "Summarize"}</button>
+          {out.sum && <div className="rst-ai-output">{out.sum}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Rosterly() {
+  const [tab, setTab] = useState("dashboard");
+  const [candidates, setCandidates] = useState(seedCandidates);
+  const [employees] = useState(seedEmployees);
+  const [leaves, setLeaves] = useState(seedLeaves);
+
+  const titles = { dashboard: "Dashboard", recruitment: "Recruitment", employees: "Employees", leave: "Leave", ai: "AI tools" };
+  const subs = {
+    dashboard: "Overview of hiring and headcount.",
+    recruitment: "Move candidates through the pipeline.",
+    employees: "Search and manage the roster.",
+    leave: "Review and act on requests.",
+    ai: "AI-assisted drafting for HR tasks.",
+  };
+
+  return (
+    <div className="rst-root">
+      <div className="rst-sidebar">
+        <div className="rst-brand"><span className="rst-brand-mark" />Rosterly</div>
+        <Tab id="dashboard" Icon={IconDashboard} label="Dashboard" active={tab === "dashboard"} onClick={setTab} />
+        <Tab id="recruitment" Icon={IconKanban} label="Recruitment" active={tab === "recruitment"} onClick={setTab} />
+        <Tab id="employees" Icon={IconUsers} label="Employees" active={tab === "employees"} onClick={setTab} />
+        <Tab id="leave" Icon={IconCalendar} label="Leave" active={tab === "leave"} onClick={setTab} />
+        <Tab id="ai" Icon={IconSparkles} label="AI tools" active={tab === "ai"} onClick={setTab} />
+      </div>
+      <div className="rst-main">
+        <div className="rst-page-title">{titles[tab]}</div>
+        <div className="rst-page-sub">{subs[tab]}</div>
+        {tab === "dashboard" && <Dashboard candidates={candidates} employees={employees} leaves={leaves} />}
+        {tab === "recruitment" && <Recruitment candidates={candidates} setCandidates={setCandidates} />}
+        {tab === "employees" && <Employees employees={employees} />}
+        {tab === "leave" && <Leave leaves={leaves} setLeaves={setLeaves} />}
+        {tab === "ai" && <AITools candidates={candidates} />}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Rosterly />);
+</script>
+</body>
+</html>
